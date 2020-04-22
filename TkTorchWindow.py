@@ -19,6 +19,9 @@ from pyopengltk import OpenGLFrame
 import torch
 from torch.autograd import Variable
 
+import os
+os.environ['DISPLAY'] = 'localhost:10.0'
+
 # TkInter widget that can draw torch tensors directly from GPU memory
 
 @contextmanager
@@ -66,6 +69,7 @@ class TorchImageView(OpenGLFrame):
         self.show_fps = show_fps
         self.pycuda_initialized = False
         self.animate = 0 # disable internal main loop
+
         OpenGLFrame.__init__(self, root, **kwargs)
 
     def initgl(self):

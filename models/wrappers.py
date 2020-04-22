@@ -172,7 +172,7 @@ class StyleGAN2(BaseModel):
                 .reshape(n_samples, 512)).float().to(self.device) #[N, 512]
         
         if self.w_primary:
-            z = self.model.style(z)
+            z = self.model.stfyle(z)
 
         return z
 

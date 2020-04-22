@@ -1,0 +1,61 @@
+####################################### StyleGAN2 ffhq
+
+configs = [
+    #Expressions (No problem)
+
+    ('StyleGAN2', 'style', 'latent', 'w', 6, 8, 'ffhq', -20.0, 43, 'Disgusted', [140658858, 1887645531]),
+    ('StyleGAN2', 'style', 'latent', 'w', 4, 5, 'ffhq', 10.0, 19, 'Big smile', [427229260]),
+    ('StyleGAN2', 'style', 'latent', 'w', 6, 8, 'ffhq', -20.0, 33, 'Scary eyes', [1887645531]),
+    ('StyleGAN2', 'style', 'latent', 'w', 4, 7, 'ffhq', 10.0, 36, 'Displeased', [1887645531]),
+    ('StyleGAN2', 'style', 'latent', 'w', 3, 6, 'ffhq', -15.0, 23, 'In awe', [1635892780]),
+    ('StyleGAN2', 'style', 'latent', 'w', 4, 10, 'ffhq', -20.0, 54, 'Fearful eyes', [11573701]),
+    ('StyleGAN2', 'style', 'latent', 'w', 4, 5, 'ffhq', -20.0, 20, 'Unhappy bowl cut', [1635892780])
+    ('StyleGAN2', 'style', 'latent', 'w', 4, 6, 'ffhq', -16.0, 36, 'Smile', [1382206226]),
+    ('StyleGAN2', 'style', 'latent', 'w', 3, 7, 'ffhq', -14.5, 35, 'Screaming', [1887645531]),
+    ('StyleGAN2', 'style', 'latent', 'w', 4, 5, 'ffhq', -20.0, 46, 'Smile', [1175071341]),
+
+    # Pose (No problem)
+    ('StyleGAN2', 'style', 'latent', 'w', 1, 4, 'ffhq', -10.5, 11, 'Head angle up', [798602383])
+
+    #Hair
+    ('StyleGAN2', 'style', 'latent', 'w', 8, 9, 'ffhq', -10.2, 16, 'Hair albedo', [427229260]),
+    ('StyleGAN2', 'style', 'latent', 'w', 2, 5, 'ffhq', 18.2, 21, 'Bald', [1635892780]),
+    ('StyleGAN2', 'style', 'latent', 'w', 3, 6, 'ffhq', -60.0, 47, 'Curly hair', [1140578688]),
+    ('StyleGAN2', 'style', 'latent', 'w', 4, 5, 'ffhq', -13.6, 21, 'Hairline', [1635892780]),
+    ('StyleGAN2', 'style', 'latent', 'w', 0, 8, 'ffhq', 20.0, 30, 'Happy frizzy hair', [1887645531]),
+    ('StyleGAN2', 'style', 'latent', 'w', 3, 5, 'ffhq', -9.0, 20, 'Forehead hair', [1382206226]),
+    ('StyleGAN2', 'style', 'latent', 'w', 0, 5, 'ffhq', -9.0, 21, 'Happy frizzy hair', [1382206226]),
+
+    #Appearance
+    ('StyleGAN2', 'style', 'latent', 'w', 8, 9, 'ffhq', 9.0, 0, 'Makeup', [266415229, 375122892]),
+    ('StyleGAN2', 'style', 'latent', 'w', 8, 9, 'ffhq', 20.0, 37, 'Eyebrow thickness', [1887645531]),
+    ('StyleGAN2', 'style', 'latent', 'w', 7, 8, 'ffhq', -30.0, 54, 'Eye openness', [11573701]),
+    ('StyleGAN2', 'style', 'latent', 'w', 0, 5, 'ffhq', 20.0, 37, 'Face roundness', [1887645531]),
+    ('StyleGAN2', 'style', 'latent', 'w', 3, 6, 'ffhq', -15.0, 22, 'Large jaw', [1635892780]),
+    ('StyleGAN2', 'style', 'latent', 'w', 10, 11, 'ffhq', 20.0, 34, 'Lipstick', [1887645531]),
+    ('StyleGAN2', 'style', 'latent', 'w', 4, 5, 'ffhq', -30.0, 51, 'Nose length', [11573701]),
+    ('StyleGAN2', 'style', 'latent', 'w', 2, 6, 'ffhq', -20.0, 32, 'Short face', [1887645531]),
+    ('StyleGAN2', 'style', 'latent', 'w', 7, 9, 'ffhq', -40.0, 58, 'Trimmed beard', [1602858467]),
+    ('StyleGAN2', 'style', 'latent', 'w', 8, 11, 'ffhq', 9.0, 0, 'Makeup', [1953272274]),
+
+    #Lighting
+    ('StyleGAN2', 'style', 'latent', 'w', 8, 9, 'ffhq', 13.0, 13, 'Bright BG vs FG', [798602383]),
+    ('StyleGAN2', 'style', 'latent', 'w', 8, 9, 'ffhq', -8.0, 10, 'Sunlight in face', [798602383]),
+    ('StyleGAN2', 'style', 'latent', 'w', 8, 9, 'ffhq', -15.0, 25, 'Light UD', [1382206226]),
+    ('StyleGAN2', 'style', 'latent', 'w', 8, 18, 'ffhq', 5.0, 27, 'Overexposed', [1887645531]),
+
+    #Church Transfering
+    ('StyleGAN2', 'style', 'latent', 'w', 8, 9, 'ffhq', 20.0, 15, 'Sun direction', [485108354]),
+    ('StyleGAN2', 'style', 'latent', 'w', 7, 16, 'ffhq', 20.0, 38, 'Skin Color', [1419881462]),
+    ('StyleGAN2', 'style', 'latent', 'w', 7, 9, 'ffhq', -8.4, 8, 'Clothing', [1777321344, 38689046]),
+
+    #Cat Transfering
+    ('StyleGAN2', 'style', 'latent', 'w', 5, 8, 'ffhq', 20.0, 45, 'White Hair', [81011138]),
+    ('StyleGAN2', 'style', 'latent', 'w', 2, 5, 'ffhq', 20.0, 27, 'Fluffiness', [740196857]),
+    ('StyleGAN2', 'style', 'latent', 'w', 8, 9, 'ffhq', 12.7, 28, 'Wrinkles', [740196857]),
+
+    #Cars Transfering
+    ('StyleGAN2', 'style', 'latent', 'w', 8, 9, 'ffhq', -14.0, 29, 'Highlights', [490151100, 1010645708]),
+    ('StyleGAN2', 'style', 'latent', 'w', 7, 16, 'ffhq', 20.0, 37, 'Contrast', [1419881462]),
+    ('StyleGAN2', 'style', 'latent', 'w', 7, 9, 'ffhq', 80.0, 18, 'SkinColor_HairColor', [1498448887])
+]

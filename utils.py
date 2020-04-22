@@ -38,6 +38,10 @@ def pad_frames(strip, pad_fract_horiz=64, pad_fract_vert=0, pad_value=None):
         elif pad_fract_vert > 0:
             frames.append(pad_value*np.ones((frame.shape[0]//pad_fract_vert, frame.shape[1], 3), dtype=dtype))
         frames.append(frame)
+
+    for frame in strip[1:]:
+        print (frame.shape)
+
     return frames
 
 

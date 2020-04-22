@@ -212,6 +212,7 @@ def setup_ui():
     global root, toolbar, ui_state, app, canvas
 
     root = tk.Tk()
+
     scale = 1.0
     app = TorchImageView(root, width=int(scale*1024), height=int(scale*1024), show_fps=False)
     app.pack(fill=tk.BOTH, expand=tk.YES)
@@ -641,15 +642,31 @@ def on_key_release(symbol, modifiers):
     handle_keypress(symbol)
 
 if __name__=='__main__':
+
     setup_model()
+
+    print("Setup model")
+
     setup_ui()
+
+    print("Setup ui")
+
     resample_latent()
+
+    print("Resample Latent")
 
     pending_close = False
     while not pending_close:
         root.update()
+
+        print("Root Update")
+
         app.update()
+
+        print("App Update")
+
         on_draw()
         reposition_toolbar()
+
 
     root.destroy()
