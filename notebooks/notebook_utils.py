@@ -38,10 +38,14 @@ def _create_strip_impl(inst, mode, layer, latents, x_comp, z_comp, act_stdev, la
     layer_start = np.clip(layer_start, 0, layer_end)
 
     if len(latents) > num_frames:
+
         # Batch over latents
         return _create_strip_batch_lat(inst, mode, layer, latents, x_comp, z_comp,
             act_stdev, lat_stdev, act_mean, lat_mean, sigma, layer_start, layer_end, num_frames, center)
     else:
+
+        print("Batch over sigmas")
+
         # Batch over strip frames
         return _create_strip_batch_sigma(inst, mode, layer, latents, x_comp, z_comp,
             act_stdev, lat_stdev, act_mean, lat_mean, sigma, layer_start, layer_end, num_frames, center)
@@ -76,6 +80,7 @@ def _create_strip_batch_sigma(inst, mode, layer, latents, x_comp, z_comp, act_st
                     dotp = torch.sum((value - act_mean)*normalize(x_comp), dim=-1, keepdim=True)
                     zeroing_offset_act = normalize(x_comp)*dotp # offset that sets coordinate to zero
                 else:
+
                     # Shift latent to lie on mean along given component
                     dotp = torch.sum((z_single - lat_mean)*normalize(z_comp), dim=-1, keepdim=True)
                     zeroing_offset_lat = dotp*normalize(z_comp)
@@ -84,12 +89,14 @@ def _create_strip_batch_sigma(inst, mode, layer, latents, x_comp, z_comp, act_st
                 z = z_batch
 
                 if mode in ['latent', 'both']:
+
                     z = [z]*inst.model.get_max_latents()
                     delta = z_comp * sigmas.reshape([-1] + [1]*(z_comp.ndim - 1)) * lat_stdev
                     for i in range(layer_start, layer_end):
                         z[i] = z[i] - zeroing_offset_lat + delta
 
                 if mode in ['activation', 'both']:
+
                     comp_batch = x_comp.repeat_interleave(B, axis=0)
                     delta = comp_batch * sigmas.reshape([-1] + [1]*(comp_batch.ndim - 1))
                     inst.edit_layer(layer, offset=delta * act_stdev - zeroing_offset_act)

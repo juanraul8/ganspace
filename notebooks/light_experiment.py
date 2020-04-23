@@ -15,7 +15,7 @@ from timeit import default_timer as timer
 from notebook_init import *
 from tqdm import trange
 
-out_root = Path('out/')
+out_root = Path('../results/')
 makedirs(out_root, exist_ok=True)
 B = 1
 
@@ -24,10 +24,9 @@ def createRandomSamples(inst, latent, z_comp, lat_stdev, lat_mean, sigma,
                             layer_start, layer_end, num_frames = 5, center = True):
 
     print ("Random Samples Debugging")
-    print (type(inst.model))
+    #print (type(inst.model))
 
     num_frames = 5
-    B = 5
 
     print ("Layers:")
     print (layer_start)
@@ -37,11 +36,11 @@ def createRandomSamples(inst, latent, z_comp, lat_stdev, lat_mean, sigma,
     #sigma_range = sigma * np.random.randn(num_frames) #Sampling Gaussian Dist
     #sigma_range = np.random.uniform(-sigma, sigma, num_frames) #Sampling Uniform Dist
 
-    print (z_comp.shape)
+    #print (z_comp.shape)
 
     zs = latent
 
-    normalize = lambda v: v / torch.sqrt(torch.sum(v * 2, dim=-1, keepdim=True) + 1e-8)
+    normalize = lambda v: v / torch.sqrt(torch.sum(v ** 2, dim=-1, keepdim=True) + 1e-8)
     zeroing_offset_lat = 0
 
     frames = []
@@ -56,15 +55,15 @@ def createRandomSamples(inst, latent, z_comp, lat_stdev, lat_mean, sigma,
         with torch.no_grad():
             z = [zs] * inst.model.get_max_latents()  # one per layer
 
-            print ("Debugging Z")
+            #print ("Debugging Z")
 
             delta = z_comp * s * lat_stdev
 
             for k in range(layer_start, layer_end):
                 z[k] = z[k] - zeroing_offset_lat + delta
 
-            print (len(z))
-            print (z[0].shape)
+            #print (len(z))
+            #print (z[0].shape)
 
             img = inst.model.sample_np(z)
 
@@ -79,20 +78,18 @@ start = timer()
 ####################################### StyleGAN2 ffhq
 # Model, layer, edit, layer_start, layer_end, class, sigma, idx, name, (example seeds)
 configs = [
-
-
     #Lighting
 
-    #('StyleGAN2', 'style', 'latent', 'w', 8, 9, 'ffhq', 13.0, 13, 'Bright BG vs FG', [798602383]),
-    #('StyleGAN2', 'style', 'latent', 'w', 8, 9, 'ffhq', -8.0, 10, 'Sunlight in face', [798602383]),
-    #('StyleGAN2', 'style', 'latent', 'w', 8, 9, 'ffhq', -15.0, 25, 'Light UD', [1382206226]),
-    #('StyleGAN2', 'style', 'latent', 'w', 8, 18, 'ffhq', 5.0, 27, 'Overexposed', [1887645531]),
-    #('StyleGAN2', 'style', 'latent', 'w', 8, 9, 'ffhq', -14.0, 29, 'Highlights', [490151100, 1010645708]),
+    ('StyleGAN2', 'style', 'latent', 'w', 8, 9, 'ffhq', 13.0, 13, 'Bright BG vs FG', [798602383]),
+    ('StyleGAN2', 'style', 'latent', 'w', 8, 9, 'ffhq', -8.0, 10, 'Sunlight in face', [798602383]),
+    ('StyleGAN2', 'style', 'latent', 'w', 8, 9, 'ffhq', -15.0, 25, 'Light UD', [1382206226]),
+    ('StyleGAN2', 'style', 'latent', 'w', 8, 18, 'ffhq', 5.0, 27, 'Overexposed', [1887645531]),
+    ('StyleGAN2', 'style', 'latent', 'w', 8, 9, 'ffhq', -14.0, 29, 'Highlights', [490151100, 1010645708]),
 
     #Experiments
     #('StyleGAN2', 'style', 'latent', 'w', 8, 8, 'ffhq', -8.0, 10, 'Sunlight in face', [798602383]), --> NO Change
-    ('StyleGAN2', 'style', 'latent', 'w', 8, 9, 'ffhq', -8.0, 10, 'Sunlight in face', [798602383]),
-    ('StyleGAN2', 'style', 'latent', 'w', 7, 9, 'ffhq', -20.0, 58, 'Trimmed beard', [798602383]),
+    #('StyleGAN2', 'style', 'latent', 'w', 8, 9, 'ffhq', -8.0, 10, 'Sunlight in face', [798602383]),
+    #('StyleGAN2', 'style', 'latent', 'w', 7, 9, 'ffhq', -20.0, 58, 'Trimmed beard', [798602383]),
 
     #('StyleGAN2', 'style', 'latent', 'w', 8, 9, 'ffhq', -10.0, 25, 'Light UD', [798602383])
     #('StyleGAN2', 'style', 'latent', 'w', 8, 9, 'ffhq', 5.0, 13, 'Bright BG vs FG', [798602383]),
@@ -103,7 +100,7 @@ has_gpu = torch.cuda.is_available()
 device = torch.device('cuda' if has_gpu else 'cpu')
 
 num_imgs_per_example = 1
-num_seeds = 3
+num_seeds = 1
 
 for config_id, (
 model_name, layer, mode, latent_space, l_start, l_end, classname, sigma, idx, title, seeds) in enumerate(configs[:]):
@@ -113,11 +110,7 @@ model_name, layer, mode, latent_space, l_start, l_end, classname, sigma, idx, ti
     model = inst.model
 
     model.truncation = 0.7
-
-    if latent_space == 'w':
-        model.use_w()
-    elif hasattr(model, 'use_z'):
-        model.use_z()
+    model.use_w()
 
     # Load or compute decomposition
     config = Config(
@@ -125,7 +118,7 @@ model_name, layer, mode, latent_space, l_start, l_end, classname, sigma, idx, ti
         model=model_name,
         layer=layer,
         estimator='ipca',
-        use_w=(latent_space == 'w'),
+        use_w=True,
         n=1_000_000
     )
 
@@ -174,9 +167,6 @@ model_name, layer, mode, latent_space, l_start, l_end, classname, sigma, idx, ti
 
         samples = createRandomSamples(inst, latent, components.Z_comp[idx], components.Z_stdev[idx],
                                        components.Z_global_mean, sigma, edit_start, edit_end)
-
-        #batch_frames = createRandomSamples(inst, latents, components.Z_comp[idx], components.Z_stdev[idx],
-        #                               components.Z_global_mean, sigma, edit_start, edit_end)
 
         if id == 0:  # Show first person
 
