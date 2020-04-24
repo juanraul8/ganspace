@@ -19,24 +19,60 @@ out_root = Path('../results/')
 makedirs(out_root, exist_ok=True)
 B = 1
 
-# Batch over latents if there are more latents than frames in strip
-def createRandomSamples(inst, latent, z_comp, lat_stdev, lat_mean, sigma,
+# Create random samples using the semantic controls
+def applyControl(inst, latent, z_comp, lat_stdev, lat_mean, sigma,
                             layer_start, layer_end, num_frames = 5, center = True):
 
-    print ("Random Samples Debugging")
-    #print (type(inst.model))
-
-    num_frames = 5
-
-    print ("Layers:")
-    print (layer_start)
-    print (layer_end)
+    #print ("Apply Control Debugging")
 
     sigma_range = np.linspace(-sigma, sigma, num_frames, dtype=np.float32) #Grid values
     #sigma_range = sigma * np.random.randn(num_frames) #Sampling Gaussian Dist
     #sigma_range = np.random.uniform(-sigma, sigma, num_frames) #Sampling Uniform Dist
 
-    #print (z_comp.shape)
+    L, N = latent.shape
+
+    z_mean = latent[layer_start:layer_end].mean(0)
+    zs = []
+
+    for l in range(L):
+        zs.append(latent[l, :].reshape(1, -1))
+
+    normalize = lambda v: v / torch.sqrt(torch.sum(v ** 2, dim=-1, keepdim=True) + 1e-8)
+
+    zeroing_offset_lat = 0
+
+    if center: # Shift latent to lie on mean along given component
+         dotp = torch.sum((z_mean - lat_mean) * normalize(z_comp), dim=-1, keepdim=True)
+         zeroing_offset_lat = dotp * normalize(z_comp)
+
+    frames = []
+
+    for i in range(len(sigma_range)):
+        s = sigma_range[i]
+
+        with torch.no_grad():
+            z = zs.copy()
+
+            delta = z_comp * s * lat_stdev
+
+            for k in range(layer_start, layer_end):
+                z[k] = z[k] - zeroing_offset_lat + delta
+
+            img = inst.model.sample_np(z)
+
+            frames.append(img)
+
+    return frames
+
+# Create random samples using the semantic controls
+def createRandomSamples(inst, latent, z_comp, lat_stdev, lat_mean, sigma,
+                            layer_start, layer_end, num_frames = 5, center = True):
+
+    #print ("Random Samples Debugging")
+
+    sigma_range = np.linspace(-sigma, sigma, num_frames, dtype=np.float32) #Grid values
+    #sigma_range = sigma * np.random.randn(num_frames) #Sampling Gaussian Dist
+    #sigma_range = np.random.uniform(-sigma, sigma, num_frames) #Sampling Uniform Dist
 
     zs = latent
 
@@ -55,15 +91,10 @@ def createRandomSamples(inst, latent, z_comp, lat_stdev, lat_mean, sigma,
         with torch.no_grad():
             z = [zs] * inst.model.get_max_latents()  # one per layer
 
-            #print ("Debugging Z")
-
             delta = z_comp * s * lat_stdev
 
             for k in range(layer_start, layer_end):
                 z[k] = z[k] - zeroing_offset_lat + delta
-
-            #print (len(z))
-            #print (z[0].shape)
 
             img = inst.model.sample_np(z)
 
@@ -80,17 +111,15 @@ start = timer()
 configs = [
     #Lighting
 
-    ('StyleGAN2', 'style', 'latent', 'w', 8, 9, 'ffhq', 13.0, 13, 'Bright BG vs FG', [798602383]),
-    ('StyleGAN2', 'style', 'latent', 'w', 8, 9, 'ffhq', -8.0, 10, 'Sunlight in face', [798602383]),
-    ('StyleGAN2', 'style', 'latent', 'w', 8, 9, 'ffhq', -15.0, 25, 'Light UD', [1382206226]),
-    ('StyleGAN2', 'style', 'latent', 'w', 8, 18, 'ffhq', 5.0, 27, 'Overexposed', [1887645531]),
-    ('StyleGAN2', 'style', 'latent', 'w', 8, 9, 'ffhq', -14.0, 29, 'Highlights', [490151100, 1010645708]),
+    #('StyleGAN2', 'style', 'latent', 'w', 8, 9, 'ffhq', 13.0, 13, 'Bright BG vs FG', [798602383]),
+    #('StyleGAN2', 'style', 'latent', 'w', 8, 9, 'ffhq', -8.0, 10, 'Sunlight in face', [798602383]),
+    #('StyleGAN2', 'style', 'latent', 'w', 8, 9, 'ffhq', -15.0, 25, 'Light UD', [1382206226]),
+    #('StyleGAN2', 'style', 'latent', 'w', 8, 18, 'ffhq', 5.0, 27, 'Overexposed', [798602383]),
+    ('StyleGAN2', 'style', 'latent', 'w', 8, 9, 'ffhq', -14.0, 29, 'Highlights', [798602383]),
 
     #Experiments
-    #('StyleGAN2', 'style', 'latent', 'w', 8, 8, 'ffhq', -8.0, 10, 'Sunlight in face', [798602383]), --> NO Change
-    #('StyleGAN2', 'style', 'latent', 'w', 8, 9, 'ffhq', -8.0, 10, 'Sunlight in face', [798602383]),
-    #('StyleGAN2', 'style', 'latent', 'w', 7, 9, 'ffhq', -20.0, 58, 'Trimmed beard', [798602383]),
 
+    #('StyleGAN2', 'style', 'latent', 'w', 7, 9, 'ffhq', -20.0, 58, 'Trimmed beard', [798602383]),
     #('StyleGAN2', 'style', 'latent', 'w', 8, 9, 'ffhq', -10.0, 25, 'Light UD', [798602383])
     #('StyleGAN2', 'style', 'latent', 'w', 8, 9, 'ffhq', 5.0, 13, 'Bright BG vs FG', [798602383]),
     #('StyleGAN2', 'style', 'latent', 'w', 8, 18, 'ffhq', 5.0, 27, 'Overexposed', [798602383])
@@ -147,10 +176,17 @@ model_name, layer, mode, latent_space, l_start, l_end, classname, sigma, idx, ti
     )
 
     #Create random latent vectors
-    max_seed = np.iinfo(np.int32).max
-    seeds = np.concatenate((seeds, np.random.randint(0, max_seed, num_seeds)))
-    seeds = seeds[:num_seeds].astype(np.int32)
-    latents = [model.sample_latent(1, seed=s) for s in seeds]
+    #max_seed = np.iinfo(np.int32).max
+    #seeds = np.concatenate((seeds, np.random.randint(0, max_seed, num_seeds)))
+    #seeds = seeds[:num_seeds].astype(np.int32)
+    #latents = [model.sample_latent(1, seed=s) for s in seeds]
+
+    #Load custom latent vector
+    latent = np.load("image0000-projected.npy")
+    latent = np.squeeze(latent)
+    latent = torch.from_numpy(latent).to(device)
+
+    latents = [latent]
 
     # Range is exclusive, in contrast to notation in paper
     edit_start = l_start
@@ -165,17 +201,22 @@ model_name, layer, mode, latent_space, l_start, l_end, classname, sigma, idx, ti
 
     for id, latent in enumerate(latents):
 
-        samples = createRandomSamples(inst, latent, components.Z_comp[idx], components.Z_stdev[idx],
-                                       components.Z_global_mean, sigma, edit_start, edit_end)
+        #samples = createRandomSamples(inst, latent, components.Z_comp[idx], components.Z_stdev[idx],
+        #                               components.Z_global_mean, sigma, edit_start, edit_end, center=False, num_frames=1000)
 
-        if id == 0:  # Show first person
+        samples = applyControl(inst, latent, components.Z_comp[idx], components.Z_stdev[idx],
+                                      components.Z_global_mean, sigma, edit_start, edit_end, center = True, num_frames=1000)
 
-            examples = np.hstack(pad_frames(samples[0:5]))
-
-            plt.figure(figsize=(15, 15))
-            plt.imshow(examples)
-            plt.axis('off')
-            plt.show()
+        # Show some samples
+        # if id == 0:
+        #
+        #     examples = np.hstack(pad_frames(samples[0:5]))
+        #     #examples = np.hstack(pad_frames(samples[50:55]))
+        #
+        #     plt.figure(figsize=(15, 15))
+        #     plt.imshow(examples)
+        #     plt.axis('off')
+        #     plt.show()
 
         new_folder = os.path.join(output_dir, "person_{:04d}".format(id))
         os.makedirs(new_folder, exist_ok=True)
